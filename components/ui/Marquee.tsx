@@ -1,15 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import { useReducedMotion } from "framer-motion";
 
-/** Infinite marquee, double track. Paused for reduced motion. */
+/** Infinite marquee, double track. Paused for reduced motion, and on hover. */
 export function Marquee({ items, reverse = false }: { items: string[]; reverse?: boolean }) {
   const reduce = useReducedMotion();
+  const [paused, setPaused] = useState(false);
   const row = [...items, ...items];
   return (
-    <div className="overflow-hidden" aria-label={items.join(", ")}>
+    <div
+      className="overflow-hidden"
+      aria-label={items.join(", ")}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
       <div
-        className={`flex w-max gap-3 py-1 ${reduce ? "" : reverse ? "animate-marquee-right" : "animate-marquee-left"}`}
+        className={`flex w-max gap-3 py-1 ${reduce ? "" : reverse ? "animate-marquee-right" : "animate-marquee-left"} ${paused && !reduce ? "marquee-paused" : ""}`}
       >
         {row.map((item, i) => (
           <span
