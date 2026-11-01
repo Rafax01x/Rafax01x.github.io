@@ -13,7 +13,7 @@ export type Project = {
 export const projects: Project[] = [
   {
     id: "rafax01-portfolio",
-    title: "rafax01 — Portfolio",
+    title: "rafax01: Portfolio",
     category: "Web",
     year: "2026",
     description: "This site itself: a premium, motion-first portfolio with preloader, custom cursor, pinned project showcase, and reduced-motion fallbacks.",
@@ -25,7 +25,7 @@ export const projects: Project[] = [
   },
   {
     id: "kafekas",
-    title: "KafeKas — Cafe POS",
+    title: "KafeKas: Cafe POS",
     category: "Android",
     year: "2025",
     description: "A cafe cashier that actually survives a busy shift: fast ordering, held orders, kitchen slips, and daily reports.",
@@ -37,7 +37,7 @@ export const projects: Project[] = [
   },
   {
     id: "nisky",
-    title: "Nisky — Nail Salon Booking",
+    title: "Nisky: Nail Salon Booking",
     category: "Android",
     year: "2025",
     description: "Booking for a nail salon, no login, no Play Store friction. Gallery, try-on, services, and WhatsApp checkout.",
@@ -52,7 +52,7 @@ export const projects: Project[] = [
     title: "rubber-roast",
     category: "Tools",
     year: "2025",
-    description: "A VS Code extension that roasts your code on save — empty catches, console.log spam, and TODO comments.",
+    description: "A VS Code extension that roasts your code on save: empty catches, console.log spam, and TODO comments.",
     stack: ["TypeScript", "VS Code API"],
     detail:
       "Small, funny, and useful. It scans on save and delivers the roast in Indonesian or English, without slowing down the editor. v1.0.0 released.",
@@ -73,7 +73,7 @@ export const projects: Project[] = [
   },
   {
     id: "simpen",
-    title: "Simpen — Secure Notes",
+    title: "Simpen: Secure Notes",
     category: "Android",
     year: "2025",
     description: "Safe notes and important numbers, encrypted on device, fast on a 4 GB phone.",
@@ -95,5 +95,4 @@ export const stats = [
   { value: 5, suffix: "", label: "Products shipped" },
   { value: 2, suffix: "", label: "Open-source tools" },
   { value: 3, suffix: "", label: "Android apps in use" },
-  { value: 100, suffix: "%", label: "Built to be judged on a real phone" },
 ];
