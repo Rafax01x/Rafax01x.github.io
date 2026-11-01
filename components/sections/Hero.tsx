@@ -42,9 +42,9 @@ export function Hero({ start = true }: { start?: boolean }) {
 
       <motion.div style={reduce ? undefined : { rotateX, rotateY, transformPerspective: 900 }} className="relative">
         <p className="font-mono text-xs tracking-[0.3em] text-white/70 uppercase">
-          Creative Developer — Web × Android
+          Creative Developer, Web × Android
         </p>
-        <h1 className="mt-5 font-[Clash_Display] text-[clamp(4rem,16vw,12rem)] leading-[0.9] font-bold tracking-tight" aria-label="rafax01">
+        <h1 className="mt-5 font-[Clash_Display] text-[clamp(2.75rem,10vw,7rem)] leading-[0.9] font-bold tracking-tight" aria-label="rafax01">
           <span className="flex overflow-hidden" aria-hidden>
             {"rafax01".split("").map((ch, i) => (
               <motion.span
@@ -76,7 +76,7 @@ export function Hero({ start = true }: { start?: boolean }) {
         >
           <MagneticButton>
             <a href="#projects" className="inline-flex items-center rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-black">
-              See selected work →
+              See selected work
             </a>
           </MagneticButton>
           <MagneticButton>

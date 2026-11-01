@@ -92,7 +92,7 @@ export function Projects() {
   return (
     <section id="projects" ref={sectionRef} className="relative overflow-hidden py-24" aria-label="Projects">
       <div className="px-5 sm:px-8 lg:px-12">
-        <p className="font-mono text-xs tracking-[0.3em] text-white/70 uppercase">02 — Selected work</p>
+        <p className="font-mono text-xs tracking-[0.3em] text-white/70 uppercase">02: Selected work</p>
         <h2 className="mt-4 text-4xl font-bold tracking-tight sm:text-6xl">Work that shipped.</h2>
         <div className="mt-8 flex flex-wrap gap-2" role="group" aria-label="Filter projects">
           {filters.map((f) => (
@@ -189,7 +189,7 @@ export function Projects() {
                 rel="noopener noreferrer"
                 className="mt-6 inline-flex items-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black hover:scale-[1.05] active:scale-[0.97]"
               >
-                {selected.linkLabel} →
+                {selected.linkLabel} ↗
               </a>
             </motion.div>
           </motion.div>

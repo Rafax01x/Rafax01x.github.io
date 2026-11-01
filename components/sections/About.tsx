@@ -62,7 +62,7 @@ function TiltCard({ children, className = "" }: { children: React.ReactNode; cla
 export function About() {
   return (
     <section id="about" className="relative px-5 py-24 sm:px-8 lg:px-12" aria-label="About">
-      <p className="font-mono text-xs tracking-[0.3em] text-white/70 uppercase">01 — About</p>
+      <p className="font-mono text-xs tracking-[0.3em] text-white/70 uppercase">01: About</p>
       <TextReveal
         className="mt-5 max-w-3xl text-2xl leading-snug font-medium text-white/90 sm:text-4xl"
         text="A builder first. I judge work the same way I ship it: does it feel fast, clear, and finished on a real phone, in a real day?"
@@ -87,7 +87,7 @@ export function About() {
           <TiltCard className="h-full">
             <h3 className="text-lg font-semibold">Motion with a purpose</h3>
             <p className="mt-2 text-sm leading-relaxed text-white/60">
-              Animation should explain, guide, and delight — never slow the work down.
+              Animation should explain, guide, and delight, never slow the work down.
             </p>
           </TiltCard>
         </motion.div>

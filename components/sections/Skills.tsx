@@ -6,7 +6,7 @@ import { skills } from "@/lib/data";
 
 const bars = [
   { name: "Next.js / React / TypeScript", level: 92 },
-  { name: "Motion — Framer Motion / GSAP", level: 88 },
+  { name: "Motion: Framer Motion / GSAP", level: 88 },
   { name: "React Native / Expo", level: 90 },
   { name: "Tailwind / Design systems", level: 94 },
 ];
@@ -17,7 +17,7 @@ export function Skills() {
   return (
     <section id="skills" className="relative py-24" aria-label="Skills">
       <div className="px-5 sm:px-8 lg:px-12">
-        <p className="font-mono text-xs tracking-[0.3em] text-white/70 uppercase">03 — Stack</p>
+        <p className="font-mono text-xs tracking-[0.3em] text-white/70 uppercase">03: Stack</p>
         <h2 className="mt-4 text-4xl font-bold tracking-tight sm:text-6xl">Tools I reach for first.</h2>
       </div>
       <div className="mt-10 space-y-3">
@@ -29,7 +29,6 @@ export function Skills() {
           <div key={b.name}>
             <div className="flex justify-between text-sm">
               <span className="font-medium">{b.name}</span>
-              <span className="font-mono text-white/70">{b.level}%</span>
             </div>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
               <motion.div
@@ -44,7 +43,7 @@ export function Skills() {
           </div>
         ))}
         <p className="text-sm text-white/70">
-          Percentages are a self-assessment, not a benchmark — the projects above are the real proof.
+          Bars show relative focus, not a measured score. The projects above are the real proof.
         </p>
       </div>
     </section>
