@@ -15,7 +15,7 @@ import { scrollToSection } from "@/lib/scroll";
 /**
  * rafax01 portfolio, single page.
  * React Three Fiber is intentionally not included: it is optional in the spec,
- * and the animated gradient mesh + noise already carry the hero visual at a
+ * and the animated gradient mesh already carries the hero visual at a
  * much lower bundle and GPU cost. That keeps the Lighthouse target realistic.
  *
  * No `invisible` wrapper anymore (review fix): the preloader overlay already
@@ -37,8 +37,6 @@ export default function Home() {
     <main className="relative min-h-screen bg-[#0A0A0F] text-[#FAFAFA]">
       <Preloader onDone={() => setReady(true)} />
       <Cursor />
-      <div className="noise-overlay" aria-hidden />
-
       {/* Top gradient progress bar */}
       <motion.div
         aria-hidden
