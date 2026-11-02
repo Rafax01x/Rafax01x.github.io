@@ -1,9 +1,8 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -52,8 +51,8 @@ const REST = PROJECTS.slice(2);
 export default function Projects() {
   const rootRef = useRef<HTMLElement>(null);
 
-  useGSAP(
-    () => {
+  useEffect(() => {
+    const ctx = gsap.context(() => {
       // Header pops up as the section scrolls into view.
       gsap.fromTo(
         ".projects-header",
@@ -119,9 +118,9 @@ export default function Projects() {
           },
         );
       });
-    },
-    { scope: rootRef }
-  );
+    });
+    return () => ctx.revert();
+  }, []);
 
   return (
     <section

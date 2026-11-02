@@ -1,9 +1,8 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -53,8 +52,8 @@ export default function Hero() {
   const titleRef = useRef<HTMLHeadingElement | null>(null);
   const subRef = useRef<HTMLDivElement | null>(null);
 
-  useGSAP(
-    () => {
+  useEffect(() => {
+    const ctx = gsap.context(() => {
       // Title letters stagger in, one by one.
       gsap.fromTo(
         ".title-letter",
@@ -85,9 +84,9 @@ export default function Hero() {
           },
         );
       });
-    },
-    { scope: rootRef },
-  );
+    });
+    return () => ctx.revert();
+  }, []);
 
   return (
     <section
