@@ -1,82 +1,40 @@
-@import url("https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=general-sans@400,500,600&display=swap");
 @import "tailwindcss";
 
-@theme {
-  --color-ink: #0a0a0f;
-  --color-paper: #fafafa;
-  --color-violet-neon: #7c3aed;
-  --color-cyan-neon: #06b6d4;
-  --color-lime-neon: #a3e635;
-  --font-display: "Clash Display", "General Sans", system-ui, sans-serif;
-  --font-body: "General Sans", system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
 
-html { scroll-behavior: auto; }
-html.lenis, html.lenis body { height: auto; }
-.lenis.lenis-smooth { scroll-behavior: auto !important; }
-
+html,
 body {
-  background: #0a0a0f;
-  color: #fafafa;
-  font-family: var(--font-body);
+  background: #0a0a09;
+  color: #e6e6df;
   overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
 }
 
-/* Visible keyboard focus everywhere (review fix: previously only the unused button had one). */
-:focus-visible {
-  outline: 2px solid #06b6d4;
-  outline-offset: 3px;
-  border-radius: 4px;
+/* Pixel scatter pulse: neon squares fade gently, staggered by delay. */
+@keyframes pixelPulse {
+  from { opacity: 1; }
+  to { opacity: 0.35; }
+}
+.pixel-pulse {
+  animation: pixelPulse 2.4s ease-in-out infinite alternate;
 }
 
-/* Anchored sections are not hidden under the fixed nav. */
-section[id], footer[id] {
-  scroll-margin-top: 96px;
+/* Liquid glass accent: translucent, blurred, with a thin specular edge.
+ * Kept to small elements only (nav, pills, cards) so backdrop blur
+ * does not tax low-end phones. Fallback: translucent dark gradient
+ * still reads as glass even where backdrop-filter is unsupported. */
+.liquid-glass {
+  background: linear-gradient(135deg, rgba(230, 230, 223, 0.14), rgba(230, 230, 223, 0.04) 55%, rgba(148, 235, 23, 0.08));
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid rgba(230, 230, 223, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
-::selection { background: #7c3aed; color: #fff; }
-
-/* Thin gradient progress bar is rendered by framer-motion; this is the track. */
-
-@keyframes marquee-left {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+/* Scroll arrow bounce: constant gentle motion so the page never feels dead. */
+@keyframes scrollBounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(6px); }
 }
-@keyframes marquee-right {
-  from { transform: translateX(-50%); }
-  to { transform: translateX(0); }
-}
-.animate-marquee-left { animation: marquee-left 32s linear infinite; }
-.animate-marquee-right { animation: marquee-right 38s linear infinite; }
-.marquee-paused, .marquee-paused * { animation-play-state: paused !important; }
-
-@keyframes float-slow {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(0, -18px, 0) scale(1.05); }
-}
-.animate-float-slow { animation: float-slow 7s ease-in-out infinite; }
-
-@keyframes bounce-soft {
-  0%, 100% { transform: translateY(0); opacity: 0.9; }
-  50% { transform: translateY(10px); opacity: 0.4; }
-}
-.animate-bounce-soft { animation: bounce-soft 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; }
-
-/* Custom cursor: hide the native cursor only on fine pointers, and only
-   when the Cursor component is active (it adds this class to <html>). */
-html.has-custom-cursor, html.has-custom-cursor a, html.has-custom-cursor button {
-  cursor: none;
-}
-@media (pointer: coarse) {
-  html.has-custom-cursor, html.has-custom-cursor a, html.has-custom-cursor button {
-    cursor: auto;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-marquee-left, .animate-marquee-right, .animate-float-slow,
-  .animate-bounce-soft { animation: none !important; }
-  html { scroll-behavior: auto; }
+.scroll-bounce {
+  display: inline-block;
+  animation: scrollBounce 0.9s ease-in-out infinite alternate;
 }
