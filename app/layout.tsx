@@ -2,20 +2,22 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "rafax01",
-  description: "Portfolio rafax01 — web and Android projects on GitHub.",
+  title: "rafax01 · Pixels change. Taste stays.",
+  description: "rafax01 — Pixels change. Taste stays.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="id" className="dark scroll-smooth">
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Pixelify+Sans:wght@600;700&family=Plus+Jakarta+Sans:wght@700;800;900&family=Silkscreen:wght@400;700&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body style={{ fontFamily: "Inter, -apple-system, sans-serif" }}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

@@ -1,40 +1,219 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-display: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-pixel: "Pixelify Sans", "Silkscreen", monospace;
+}
 
 html,
 body {
-  background: #0a0a09;
-  color: #e6e6df;
+  background: #070709;
+  color: #f4f4f5;
   overflow-x: hidden;
 }
 
-/* Pixel scatter pulse: neon squares fade gently, staggered by delay. */
-@keyframes pixelPulse {
-  from { opacity: 1; }
-  to { opacity: 0.35; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #070709;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #e11d48;
+    }
+
+    /* Ambient glow & backdrop */
+    .hero-glow {
+      background: radial-gradient(circle at 65% 28%, rgba(225, 29, 72, 0.22) 0%, rgba(163, 230, 53, 0.03) 42%, transparent 75%);
+    }
+
+    .reticle-grid {
+      background-image: 
+        radial-gradient(circle at center, rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 32px 32px, 32px 32px, 32px 32px;
+    }
+
+    /* 1984 Retro Mode Styling */
+    .retro-mode {
+      filter: grayscale(100%) contrast(185%);
+      font-family: 'Silkscreen', monospace !important;
+      background-color: #000000 !important;
+      color: #ffffff !important;
+    }
+
+    .retro-mode * {
+      border-color: #ffffff !important;
+      border-radius: 0px !important;
+      box-shadow: none !important;
+    }
+
+    .retro-mode .hero-glow {
+      background: none !important;
+    }
+
+    .retro-mode .btn-red {
+      background: #ffffff !important;
+      color: #000000 !important;
+    }
+
+    .crt-scanlines {
+      background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.5) 50%
+      ), linear-gradient(
+        90deg,
+        rgba(255, 0, 0, 0.03),
+        rgba(0, 255, 0, 0.01),
+        rgba(0, 0, 255, 0.03)
+      );
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+    }
+
+    /* Mac 1984 window stripes */
+    .mac-title-bar {
+      background: repeating-linear-gradient(
+        0deg,
+        #ffffff,
+        #ffffff 1px,
+        #000000 1px,
+        #000000 3px
+      );
+    }
+
+    /* Pixel Dither pattern */
+    .dither-pattern {
+      background-image: radial-gradient(#ffffff 1px, transparent 0);
+      background-size: 3px 3px;
+    }
+
+    /* Pulse cursor */
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    .cursor-blink {
+      animation: blink 1s infinite;
+    }
+    /* 2D Keycap Tactile Animation */
+    .kb-key {
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    .kb-key.kb-pressed {
+      transform: translateY(3px) !important;
+      box-shadow: 0 1px 0 #000, 0 2px 4px rgba(0,0,0,0.8), inset 0 2px 4px rgba(0,0,0,0.4) !important;
+      filter: brightness(1.2);
+    }
+    .kb-key.kb-pressed.bg-zinc-100 {
+      background-color: #f43f5e !important;
+      color: #ffffff !important;
+    }
+  
+/* Scroll motion, paket Ringan: fade + naik 24px, sekali saja.
+   Hanya transform + opacity (GPU), tanpa library. Class .reveal ditambah
+   lewat JS setelah mount, jadi kalau JS gagal pun konten tetap terlihat. */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  will-change: opacity, transform;
 }
-.pixel-pulse {
-  animation: pixelPulse 2.4s ease-in-out infinite alternate;
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
-/* Liquid glass accent: translucent, blurred, with a thin specular edge.
- * Kept to small elements only (nav, pills, cards) so backdrop blur
- * does not tax low-end phones. Fallback: translucent dark gradient
- * still reads as glass even where backdrop-filter is unsupported. */
-.liquid-glass {
-  background: linear-gradient(135deg, rgba(230, 230, 223, 0.14), rgba(230, 230, 223, 0.04) 55%, rgba(148, 235, 23, 0.08));
-  -webkit-backdrop-filter: blur(14px) saturate(1.4);
-  backdrop-filter: blur(14px) saturate(1.4);
-  border: 1px solid rgba(230, 230, 223, 0.22);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 24px rgba(0, 0, 0, 0.35);
+/* Paket responsif (hanya breakpoint, tanpa mengubah desain/desktop):
+   aturan di bawah ini tidak ber-layer, jadi menang atas utility Tailwind
+   hanya di lebar yang disebut. Desktop (>=640px, kecuali headline) tidak berubah. */
+
+/* HP kecil <=400px: nav pill lebih lega ditekan, tanpa mengubah isi pill. */
+@media (max-width: 400px) {
+  header nav {
+    gap: 2px;
+    padding: 4px;
+  }
+  header nav a,
+  header nav button {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    min-height: 36px;
+  }
+  /* Keyboard: tombol lebih tinggi (40px -> 44px), container lebih hemat ruang. */
+  #threeContainer {
+    padding: 8px;
+  }
+  .kb-key {
+    height: 44px;
+  }
 }
 
-/* Scroll arrow bounce: constant gentle motion so the page never feels dead. */
-@keyframes scrollBounce {
-  from { transform: translateY(0); }
-  to { transform: translateY(6px); }
+/* HP sangat kecil <=380px: headline pixel sedikit mengecil supaya tidak membungkus kasar. */
+@media (max-width: 380px) {
+  #heroHeadline {
+    font-size: 2rem;
+    line-height: 1.05;
+  }
 }
-.scroll-bounce {
-  display: inline-block;
-  animation: scrollBounce 0.9s ease-in-out infinite alternate;
+
+/* HP <640px: grid demo 2 kolom di dalam kartu proyek jadi 1 kolom; grid utama proyek sudah 1 kolom. */
+@media (max-width: 639px) {
+  .project-card .grid-cols-2 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  /* Terminal & form modal: 12px -> 13px supaya lebih mudah dibaca di HP. */
+  #terminalHistory,
+  #terminalInputBuffer,
+  #contactForm {
+    font-size: 13px;
+  }
+}
+
+/* Antislop DURING (alasan per R-31, ditulis di sini):
+   - Fokus terlihat (R-32) dan kursor pointer untuk semua kontrol (R-39).
+   - Kontras: zinc-600 (#52525b, rasio ~3.6:1 di latar gelap, GAGAL AA)
+     dinaikkan ke zinc-400 (#a1a1aa, lolos AA) untuk teks kecil (R-25).
+   - Dosis kaca (R-10): blur hanya dipertahankan di nav pill dan modal;
+     kartu proyek dan terminal dibuat solid supaya tidak semua elemen berkaca.
+   - Dosis glow (R-13): orb glow di kartu proyek dimatikan; glow hero
+     dipertahankan sebagai satu-satunya aksen fokus. */
+a, button {
+  cursor: pointer;
+}
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #f43f5e;
+  outline-offset: 2px;
+}
+.text-zinc-600 {
+  color: #a1a1aa;
+}
+.project-card,
+.project-card .backdrop-blur-2xl {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.project-card .blur-3xl {
+  display: none;
 }

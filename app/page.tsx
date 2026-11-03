@@ -1,11 +1,9 @@
-import Hero from "@/components/Hero";
-import Projects from "@/components/Projects";
+import NewSite from "@/components/NewSite";
 
 export default function Page() {
   return (
     <main>
-      <Hero />
-      <Projects />
+      <NewSite />
     </main>
   );
 }
