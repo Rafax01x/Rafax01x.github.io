@@ -129,11 +129,12 @@ export function initSwarm(): SwarmCleanup {
     );
     if (queueIndex >= targets.length) {
       // Tour done: park both bots in the bottom-right corner, fully
-      // inside the viewport. v4.0 parked at innerHeight-56, which
-      // clipped the name/status pills at the bottom edge (a bot is
-      // ~55px tall: svg + tag + status) and the tags ran past the
-      // right edge — verified clipped on desktop 1919x998.
-      setBot(bots[0], window.innerWidth - 200, window.innerHeight - 96, "sys:idle");
+      // inside the viewport and NOT overlapping each other. v4.1 fixed
+      // the viewport-edge clipping but left only 80px between the two
+      // bots, so the blue bot's pill covered the green bot's name
+      // ("agent:layou" — the final "t" hidden). Tags are ~100px wide,
+      // so the bots need 140px of horizontal separation.
+      setBot(bots[0], window.innerWidth - 260, window.innerHeight - 96, "sys:idle");
       setBot(bots[1], window.innerWidth - 120, window.innerHeight - 96, "synced");
       return;
     }
