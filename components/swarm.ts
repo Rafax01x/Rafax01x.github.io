@@ -1,8 +1,16 @@
-// Swarm Rebuild v3 — motion rebuilt from deep observation of the
+// Swarm Rebuild v3.2 — motion rebuilt from deep observation of the
 // reference (demo videos, Joel Califa's original Swarm site, and our
 // live v2). See ~/workspace/swarm-study/motion-spec-v3.md for the
 // observation notes. No code was copied from either project: this
 // engine is written from scratch for this site.
+//
+// v3.1 fixed the parallel-drag deadlock (per-drag state in a Set,
+// performance.now() deadlines). v3.2 adds a progress watchdog: if the
+// layer counter does not advance for 25 s the tour reveals everything
+// instead of trapping the visitor on a black canvas — a stuck tour
+// must never be worse than no tour. The layer also carries a
+// data-swarm-version marker so a verification can prove which engine
+// is actually running in the browser.
 //
 // What v3 changes vs v2: 16 agents (8 named leads + 8 unnamed workers
 // who join during the tour, so the count grows); per-agent speed and
@@ -147,6 +155,7 @@ export function initSwarm(): SwarmCleanup {
 
   let cancelled = false;
   let rafId = 0;
+  let watchdogId = 0;
   let lastTick = 0;
   const listeners: Array<() => void> = [];
 
@@ -163,6 +172,7 @@ export function initSwarm(): SwarmCleanup {
   // --- Layer -----------------------------------------------------------
   const layer = document.createElement("div");
   layer.className = "swarm-layer";
+  layer.dataset.swarmVersion = "3.2";
   layer.setAttribute("aria-hidden", "true");
 
   const blank = document.createElement("div");
@@ -798,6 +808,11 @@ export function initSwarm(): SwarmCleanup {
         if (!state.done) {
           state.done = true;
           activeDrags.delete(state);
+          // Snap the frame to its full size: a timeout-resolved drag
+          // still leaves a finished-looking frame behind.
+          state.frame.el.style.width = `${state.rect.width}px`;
+          state.frame.el.style.height = `${state.rect.height}px`;
+          state.frame.badge.textContent = `${Math.round(state.rect.width)} × ${Math.round(state.rect.height)}`;
           resolve();
         }
       }, 1900);
@@ -1009,6 +1024,27 @@ export function initSwarm(): SwarmCleanup {
     lastTick = performance.now();
     rafId = requestAnimationFrame(tick);
 
+    // Progress watchdog: a healthy tour advances the layer counter
+    // at least every few seconds. If it is stuck for 25 s, reveal
+    // everything instead of leaving the visitor on a black canvas.
+    let lastLayersSeen = layersDone;
+    let lastProgressAt = Date.now();
+    watchdogId = window.setInterval(() => {
+      if (cancelled || layersDone >= totalLayers) {
+        window.clearInterval(watchdogId);
+        watchdogId = 0;
+        return;
+      }
+      if (layersDone > lastLayersSeen) {
+        lastLayersSeen = layersDone;
+        lastProgressAt = Date.now();
+      } else if (Date.now() - lastProgressAt > 25000) {
+        window.clearInterval(watchdogId);
+        watchdogId = 0;
+        skip();
+      }
+    }, 1000);
+
     // Intro: leads orbit the site mark in a loose ring, then the ring
     // decays slowly — agents leave one by one at different speeds.
     orbitStart = performance.now();
@@ -1076,6 +1112,7 @@ export function initSwarm(): SwarmCleanup {
     }
     cancelled = true;
     cancelAnimationFrame(rafId);
+    if (watchdogId) window.clearInterval(watchdogId);
     for (const remove of listeners) remove();
     layer.remove();
   };
