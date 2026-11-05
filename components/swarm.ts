@@ -128,9 +128,13 @@ export function initSwarm(): SwarmCleanup {
       document.querySelectorAll<HTMLElement>(".swarm-target"),
     );
     if (queueIndex >= targets.length) {
-      // Tour done: park both bots in the bottom-right corner.
-      setBot(bots[0], window.innerWidth - 130, window.innerHeight - 56, "sys:idle");
-      setBot(bots[1], window.innerWidth - 65, window.innerHeight - 56, "synced");
+      // Tour done: park both bots in the bottom-right corner, fully
+      // inside the viewport. v4.0 parked at innerHeight-56, which
+      // clipped the name/status pills at the bottom edge (a bot is
+      // ~55px tall: svg + tag + status) and the tags ran past the
+      // right edge — verified clipped on desktop 1919x998.
+      setBot(bots[0], window.innerWidth - 200, window.innerHeight - 96, "sys:idle");
+      setBot(bots[1], window.innerWidth - 120, window.innerHeight - 96, "synced");
       return;
     }
 
