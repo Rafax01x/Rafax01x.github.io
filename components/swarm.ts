@@ -1,4 +1,4 @@
-// Swarm Cursors v4.8 — 16 UNNAMED cursors that BUILD the website
+// Swarm Cursors v4.9 — 16 UNNAMED cursors that BUILD the website
 // from a BLANK page, SMOOTHLY, and then LEAVE. The page is blank
 // from the very first frame after the preloader: the blank state
 // is prepared at init, while the preloader is still fully opaque
@@ -6,16 +6,17 @@
 // preloader's fade — and the WHOLE page is blank, because the
 // sections themselves are hidden at prepare (raising a section
 // above the blank exposed all of its children, not just the
-// target: v4.7 leak) and the wrapper's border is hidden too. A
-// section is revealed when its first target is built. Then the
-// swarm builds it section by section: the two leads arrive, a
-// dashed outline fades in, and the section rises + fades in inside
-// it — then the next. When the build is done, the blank fades, the
-// cursors park for a beat, then fade out and are removed entirely:
-// a finished page has no cursors stuck at the bottom. The v4 tour
-// (sequential queue over the 8 .swarm-target sections, SPACEBAR
-// press on the keyboard, smooth-scroll follow) and the 16-arrow
-// crew from v4.3 are kept:
+// target: v4.7 leak), the wrapper's border is removed, and the
+// top bar is hidden too (it lives OUTSIDE the wrapper, so the
+// blank cannot cover it: v4.8 leak). A section is revealed when
+// its first target is built. Then the swarm builds it section by
+// section: the two leads arrive, a dashed outline fades in, and
+// the section rises + fades in inside it — then the next. When
+// the build is done, the blank fades, the cursors park for a beat,
+// then fade out and are removed entirely: a finished page has no
+// cursors stuck at the bottom. The v4 tour (sequential queue over
+// the 8 .swarm-target sections, SPACEBAR press on the keyboard,
+// smooth-scroll follow) and the 16-arrow crew from v4.3 are kept:
 //
 // - NO names, NO labels anywhere: no "agent:layout", no status pills,
 //   no task tags. The cursors are just small coloured arrows.
@@ -167,7 +168,7 @@ export function initSwarm(): SwarmCleanup {
   const overlay = document.createElement("div");
   overlay.id = "swarm-overlay";
   overlay.className = "swarm-layer";
-  overlay.dataset.swarmVersion = "4.8";
+  overlay.dataset.swarmVersion = "4.9";
   overlay.setAttribute("aria-hidden", "true");
 
   const makeBot = (color: string, lead: boolean): Bot => {
@@ -255,8 +256,18 @@ export function initSwarm(): SwarmCleanup {
     const header = document.querySelector("header");
     if (header) raise(header as HTMLElement);
     // Hide the wrapper's border while the page is blank, or its
-    // rounded frame would show around the empty canvas.
-    if (wrapper) wrapper.style.borderColor = "transparent";
+    // rounded frame would show around the empty canvas. (border:
+    // none, not just a transparent colour — the colour alone did
+    // not hide it in v4.8.)
+    if (wrapper) wrapper.style.border = "none";
+    // The top bar (live clock + "00 Intro" progress) lives OUTSIDE
+    // the content wrapper, so the blank cannot cover it — hide it
+    // explicitly. It returns with the rest of the page at the end
+    // (revealAll clears .swarm-section-hidden from everything).
+    const topBar = document
+      .getElementById("liveClock")
+      ?.closest<HTMLElement>(".max-w-7xl");
+    if (topBar) topBar.classList.add("swarm-section-hidden");
     document
       .querySelectorAll<HTMLElement>(".swarm-target")
       .forEach((el) => {
@@ -289,7 +300,7 @@ export function initSwarm(): SwarmCleanup {
         el.classList.remove("swarm-section-hidden");
         el.style.opacity = "";
       });
-    if (wrapper) wrapper.style.borderColor = "";
+    if (wrapper) wrapper.style.border = "";
     unraiseAll();
   };
 
