@@ -1,8 +1,11 @@
-// Swarm Cursors v4.3 — 16 UNNAMED cursors that look like they are
-// building the website. The v4 tour (sequential queue over the 8
-// .swarm-target sections, dashed outline on the active section,
+// Swarm Cursors v4.4 — 16 UNNAMED cursors that BUILD the website
+// from a BLANK page. After the preloader, the page starts blank
+// (same dark background, nothing visible) and the swarm builds it
+// section by section: the two leads arrive, a dashed outline
+// appears, and the section fades in inside it — then the next.
+// The v4 tour (sequential queue over the 8 .swarm-target sections,
 // SPACEBAR press on the keyboard, smooth-scroll follow, park
-// bottom-right) is kept, but the crew changes completely:
+// bottom-right) and the 16-arrow crew from v4.3 are kept:
 //
 // - NO names, NO labels anywhere: no "agent:layout", no status pills,
 //   no task tags. The cursors are just small coloured arrows.
@@ -12,9 +15,11 @@
 //   section is being built, drift while they work, and never sit
 //   still. At the end the leads park bottom-right and the followers
 //   keep wandering slowly around them, like the reference finale.
-// - The page itself is never hidden (no blank canvas) and the tour
-//   never blocks it: the overlay ignores pointer input, and once the
-//   visitor scrolls, auto-scroll stops.
+// - Stacking: blank layer (z 9999) < built sections (z 10000) <
+//   cursors (z 10001). A built section is raised above the blank so
+//   it shows; unbuilt sections stay covered until their turn. The
+//   tour never blocks the page: the layers ignore pointer input,
+//   and once the visitor scrolls, auto-scroll stops.
 // Disabled on mobile (<=768px) and for prefers-reduced-motion.
 
 export type SwarmCleanup = () => void;
@@ -100,11 +105,19 @@ export function initSwarm(): SwarmCleanup {
     listeners.push(() => target.removeEventListener(type, fn, options));
   };
 
-  // --- Overlay + bots --------------------------------------------------
+  // --- Blank layer + overlay + bots ----------------------------------
+  // The blank layer covers the whole page (opaque dark) so the tour
+  // starts from a blank canvas. It sits below the built sections
+  // and below the cursors (see the header comment for the stack).
+  const blank = document.createElement("div");
+  blank.className = "swarm-blank";
+  blank.setAttribute("aria-hidden", "true");
+  document.body.appendChild(blank);
+
   const overlay = document.createElement("div");
   overlay.id = "swarm-overlay";
   overlay.className = "swarm-layer";
-  overlay.dataset.swarmVersion = "4.3";
+  overlay.dataset.swarmVersion = "4.4";
   overlay.setAttribute("aria-hidden", "true");
 
   const makeBot = (color: string, lead: boolean): Bot => {
@@ -157,6 +170,63 @@ export function initSwarm(): SwarmCleanup {
     bot.px = x;
     bot.py = y;
     bot.el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
+  };
+
+  // --- Blank-start: hide + raise targets -----------------------------
+  // A section only becomes visible when it is built: it is hidden
+  // (opacity 0) and raised above the blank layer from the start, so
+  // revealing it is just a fade-in. #hero is a stacking context, so
+  // it is raised too — otherwise its children could never rise
+  // above the blank. The site's own .reveal scroll animation is
+  // stripped from tour-owned elements so it cannot re-hide them.
+  const raised: Array<{ el: HTMLElement; pos: string; z: string }> = [];
+  const raise = (el: HTMLElement) => {
+    if (el.style.zIndex === "10000") return;
+    raised.push({ el, pos: el.style.position, z: el.style.zIndex });
+    if (window.getComputedStyle(el).position === "static") {
+      el.style.position = "relative";
+    }
+    el.style.zIndex = "10000";
+  };
+  const unraiseAll = () => {
+    for (const r of raised) {
+      r.el.style.position = r.pos;
+      r.el.style.zIndex = r.z;
+    }
+    raised.length = 0;
+  };
+
+  const prepareTargets = () => {
+    const hero = document.getElementById("hero");
+    if (hero) raise(hero);
+    // The nav lives inside the <header>, which is itself a stacking
+    // context — raise it too or the nav could never rise above the
+    // blank, no matter its own z-index.
+    const header = document.querySelector("header");
+    if (header) raise(header as HTMLElement);
+    document
+      .querySelectorAll<HTMLElement>(".swarm-target")
+      .forEach((el) => {
+        raise(el);
+        el.classList.add("swarm-hidden");
+        el.classList.remove("reveal");
+        el.querySelectorAll(".reveal").forEach((d) => {
+          d.classList.remove("reveal");
+          (d as HTMLElement).style.transitionDelay = "";
+        });
+        el.style.transitionDelay = "";
+      });
+  };
+
+  const revealAll = () => {
+    document
+      .querySelectorAll<HTMLElement>(".swarm-target")
+      .forEach((el) => {
+        el.classList.remove("swarm-hidden");
+        el.classList.remove("swarm-built");
+        el.style.opacity = "";
+      });
+    unraiseAll();
   };
 
   // --- Visitor takes over ----------------------------------------------
@@ -246,6 +316,14 @@ export function initSwarm(): SwarmCleanup {
       activeTarget = null;
       setBot(leads[0], window.innerWidth - 260, window.innerHeight - 96);
       setBot(leads[1], window.innerWidth - 120, window.innerHeight - 96);
+      // The blank canvas has done its job: fade it out to reveal the
+      // rest of the page (footer, 1984 window, …), then restore the
+      // built sections to their natural state.
+      blank.style.opacity = "0";
+      later(700, () => {
+        revealAll();
+        blank.remove();
+      });
       return;
     }
 
@@ -269,6 +347,9 @@ export function initSwarm(): SwarmCleanup {
         Math.max(20, rect.top + 32),
       );
       el.classList.add("swarm-building-lead");
+      // The section is built now: fade it in inside its frame.
+      el.classList.remove("swarm-hidden");
+      el.classList.add("swarm-built");
 
       const interactCode = el.dataset.swarmInteract;
       if (interactCode) {
@@ -309,6 +390,16 @@ export function initSwarm(): SwarmCleanup {
   const run = async () => {
     await waitForPreloader();
     if (cancelled) return;
+    // Blank first: hide the targets and cover the page in the same
+    // synchronous block, so no frame of the finished page can flash.
+    // The blank appears instantly (no transition on the way in) and
+    // only fades out at the end of the tour.
+    prepareTargets();
+    blank.style.transition = "none";
+    blank.style.opacity = "1";
+    void blank.offsetWidth;
+    blank.style.transition = "opacity .6s ease";
+    window.scrollTo({ top: 0, behavior: "auto" });
     setBot(leads[0], window.innerWidth * 0.3, 90);
     setBot(leads[1], window.innerWidth * 0.7, 90);
     // Followers join one by one, staggered, like the reference
@@ -338,6 +429,7 @@ export function initSwarm(): SwarmCleanup {
   void run();
 
   return () => {
+    if (!cancelled) revealAll();
     cancelled = true;
     cancelAnimationFrame(rafId);
     for (const id of timeouts) window.clearTimeout(id);
@@ -346,6 +438,7 @@ export function initSwarm(): SwarmCleanup {
     document
       .querySelectorAll(".swarm-building-lead")
       .forEach((el) => el.classList.remove("swarm-building-lead"));
+    blank.remove();
     overlay.remove();
   };
 }
