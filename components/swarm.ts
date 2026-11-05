@@ -1,4 +1,4 @@
-// Swarm Cursors v4.4 — 16 UNNAMED cursors that BUILD the website
+// Swarm Cursors v4.5 — 16 UNNAMED cursors that BUILD the website
 // from a BLANK page. After the preloader, the page starts blank
 // (same dark background, nothing visible) and the swarm builds it
 // section by section: the two leads arrive, a dashed outline
@@ -15,11 +15,22 @@
 //   section is being built, drift while they work, and never sit
 //   still. At the end the leads park bottom-right and the followers
 //   keep wandering slowly around them, like the reference finale.
-// - Stacking: blank layer (z 9999) < built sections (z 10000) <
-//   cursors (z 10001). A built section is raised above the blank so
-//   it shows; unbuilt sections stay covered until their turn. The
-//   tour never blocks the page: the layers ignore pointer input,
-//   and once the visitor scrolls, auto-scroll stops.
+//
+// THE STACKING TRAP (v4.4 bug, fixed here): every content section
+// lives inside one wrapper div with `backdrop-blur-xl`, which makes
+// the wrapper its own stacking context. In v4.4 the blank layer was
+// a child of <body> (z 9999), so raising a section to z 10000 did
+// NOTHING — the whole wrapper, raised children included, stayed
+// below the blank. Only the nav worked, because <header> is a
+// direct child of <body>. In v4.5 the blank layer is a child of
+// that wrapper instead, so the z-index fight happens INSIDE the
+// wrapper's context: blank z 9999 < built sections z 10000, and
+// the cursors (overlay z 10001, child of <body>) stay above all.
+// Non-target content (footer, 1984 window, section headers) needs
+// no hiding — the blank covers it, and it appears when the blank
+// fades at the end of the tour.
+// The tour never blocks the page: the layers ignore pointer input,
+// and once the visitor scrolls, auto-scroll stops.
 // Disabled on mobile (<=768px) and for prefers-reduced-motion.
 
 export type SwarmCleanup = () => void;
@@ -106,18 +117,44 @@ export function initSwarm(): SwarmCleanup {
   };
 
   // --- Blank layer + overlay + bots ----------------------------------
-  // The blank layer covers the whole page (opaque dark) so the tour
-  // starts from a blank canvas. It sits below the built sections
-  // and below the cursors (see the header comment for the stack).
+  // The blank layer covers the page so the tour starts from a blank
+  // canvas. It MUST be a child of the content wrapper (deepest
+  // common ancestor of the non-nav targets) — see the header
+  // comment: the wrapper is a backdrop-blur stacking context, and
+  // a blank living in <body> would sit above every section in it
+  // no matter how high the sections are raised. Inside the wrapper
+  // the fight is fair: blank z 9999 < built sections z 10000.
+  // The nav is exempt: <header> is a direct child of <body>, so
+  // raising the header puts it above the blank on its own.
+  const findContentWrapper = (): HTMLElement | null => {
+    const all = Array.from(
+      document.querySelectorAll<HTMLElement>(".swarm-target"),
+    );
+    const content = all.filter((t) => !t.closest("header"));
+    if (content.length === 0) return null;
+    let node: HTMLElement | null = content[0].parentElement;
+    while (node && node !== document.body) {
+      if (content.every((t) => node!.contains(t))) return node;
+      node = node.parentElement;
+    }
+    return null;
+  };
+  const wrapper = findContentWrapper();
   const blank = document.createElement("div");
   blank.className = "swarm-blank";
   blank.setAttribute("aria-hidden", "true");
-  document.body.appendChild(blank);
+  if (wrapper) {
+    wrapper.appendChild(blank);
+  } else {
+    // Fallback: no wrapper found — cover the viewport directly.
+    blank.style.position = "fixed";
+    document.body.appendChild(blank);
+  }
 
   const overlay = document.createElement("div");
   overlay.id = "swarm-overlay";
   overlay.className = "swarm-layer";
-  overlay.dataset.swarmVersion = "4.4";
+  overlay.dataset.swarmVersion = "4.5";
   overlay.setAttribute("aria-hidden", "true");
 
   const makeBot = (color: string, lead: boolean): Bot => {

@@ -233,7 +233,7 @@ textarea:focus-visible {
   overflow: hidden;
 }
 .swarm-blank {
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: #070709;
   z-index: 9999;
