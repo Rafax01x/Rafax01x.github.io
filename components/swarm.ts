@@ -290,6 +290,10 @@ export function initSwarm(): SwarmCleanup {
       orbitAngle: angle,
       departAt: 0,
     };
+    // Position immediately: until the first rAF tick, a fixed element
+    // with no transform renders at (0,0) — v3.0 flashed all 16 agents
+    // stacked in the top-left corner on the first paint.
+    el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
     if (!isLead) el.style.opacity = "0";
     return agent;
   };
@@ -365,6 +369,10 @@ export function initSwarm(): SwarmCleanup {
     agent.mode = mode;
   };
 
+  // Active drags: a SET, not one shared variable. v3.0 kept a single
+  // `dragState`, so two parallel tasks overwrote each other's drag —
+  // the second task's drag could never resolve and the tour stalled.
+  // Each drag owns its state; the ticker updates all of them.
   type DragState = {
     agent: Agent;
     frame: FrameBox;
@@ -373,7 +381,7 @@ export function initSwarm(): SwarmCleanup {
     done: boolean;
     resolve: () => void;
   };
-  let dragState: DragState | null = null;
+  const activeDrags = new Set<DragState>();
 
   const tick = (now: number) => {
     if (cancelled) return;
@@ -453,9 +461,9 @@ export function initSwarm(): SwarmCleanup {
       a.icon.style.transform = `rotate(${a.angle}deg)`;
     }
 
-    // A drag frame grows with its agent's rendered position.
-    if (dragState && !dragState.done) {
-      const d = dragState;
+    // Drag frames grow with their agent's rendered position.
+    for (const d of [...activeDrags]) {
+      if (d.done) continue;
       const w = Math.max(
         0,
         Math.min(d.rect.width, d.agent.rx - d.rect.left),
@@ -471,8 +479,12 @@ export function initSwarm(): SwarmCleanup {
         d.rect.right - d.agent.x,
         d.rect.bottom - d.agent.y,
       );
+      // NOTE: `now` here is the rAF timestamp (same origin as
+      // performance.now()), so the deadline must be set from
+      // performance.now() too — never Date.now().
       if (cornerDist < 10 || now > d.deadline) {
         d.done = true;
+        activeDrags.delete(d);
         d.frame.el.style.width = `${d.rect.width}px`;
         d.frame.el.style.height = `${d.rect.height}px`;
         d.frame.badge.textContent = `${Math.round(d.rect.width)} × ${Math.round(d.rect.height)}`;
@@ -631,7 +643,9 @@ export function initSwarm(): SwarmCleanup {
           "fade",
           1,
           [media, motion, copy][i % 3],
-          [W(5 + (i % 2))],
+          // Distinct crew per card: one agent cannot be in two
+          // parallel tasks (W5 was in two cards in v3.0).
+          [[W(5)], [W(6)], [W(4)]][i % 3],
         ),
       ),
       [W(5), W(6)],
@@ -768,22 +782,26 @@ export function initSwarm(): SwarmCleanup {
     setCursorMode(agent, "crosshair");
     setTarget(agent, rect.right - 2, rect.bottom - 2, "drag");
     await new Promise<void>((resolve) => {
-      dragState = {
+      const state: DragState = {
         agent,
         frame,
         rect,
-        deadline: Date.now() + 1800,
+        // performance.now() origin — same clock as the rAF timestamp
+        // the ticker compares against. (v3.0 used Date.now() here, an
+        // epoch clock the ticker could never reach.)
+        deadline: performance.now() + 1800,
         done: false,
         resolve,
       };
+      activeDrags.add(state);
       setTimeout(() => {
-        if (dragState && !dragState.done) {
-          dragState.done = true;
+        if (!state.done) {
+          state.done = true;
+          activeDrags.delete(state);
           resolve();
         }
       }, 1900);
     });
-    dragState = null;
     frame.el.classList.remove("swarm-frame--dragging");
     frame.el.classList.add("swarm-frame--handles");
     setCursorMode(agent, "arrow");
@@ -879,9 +897,9 @@ export function initSwarm(): SwarmCleanup {
       a.wanderUntil = 0;
     });
     const frame = acquireFrame();
+    if (task.guide) showGuide(rect.bottom);
     await dragFrame(task.drawAgent, rect, frame);
     if (cancelled) return;
-    if (task.guide) showGuide(rect.bottom);
     for (const el of task.reveal) {
       raise(el);
       el.classList.remove("swarm-hidden");
@@ -895,8 +913,8 @@ export function initSwarm(): SwarmCleanup {
       await wait(380);
     }
     if (cancelled) return;
-    hideGuide();
     await hideFrame(frame);
+    hideGuide();
     layersDone += task.layers;
     updateToolbar();
     for (const a of task.crew) {
