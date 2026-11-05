@@ -218,15 +218,23 @@ textarea:focus-visible {
   display: none;
 }
 
-/* Autonomous swarm cursors (original engine in components/swarm.ts,
-   no dependencies): two Figma-style bots build key sections in sequence.
-   The overlay never intercepts clicks (pointer-events: none everywhere);
-   disabled on mobile and for reduced motion. Blueprint state (.auto-build)
-   is only added by JS at runtime, so content stays visible if JS fails. */
+/* Swarm Rebuild (original engine in components/swarm.ts, no
+   dependencies): 8 Figma-style bots rebuild the page from a blank
+   canvas top-down. The layer never intercepts clicks (pointer-events:
+   none everywhere except the skip button); disabled on mobile and for
+   reduced motion. Hidden/blank state is only added by JS at runtime,
+   so content stays visible if JS fails. */
 .swarm-layer {
   position: fixed;
   inset: 0;
   z-index: 80;
+  pointer-events: none;
+}
+.swarm-blank {
+  position: absolute;
+  inset: 0;
+  background: #070709;
+  opacity: 0;
   pointer-events: none;
 }
 .swarm-cursor {
@@ -253,8 +261,33 @@ textarea:focus-visible {
   color: #04120a;
   white-space: nowrap;
 }
-.swarm-cursor[data-bot="ui"] .swarm-tag {
-  color: #04121a;
+.swarm-cursor[data-bot="qa"] .swarm-tag {
+  color: #0f172a;
+}
+.swarm-frame {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  border: 1.5px dashed #00ff9d;
+  background: rgba(0, 255, 157, 0.03);
+  opacity: 0;
+  pointer-events: none;
+}
+.swarm-frame-badge {
+  position: absolute;
+  left: 0;
+  top: -24px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  color: #070709;
+  background: #00ff9d;
+  border-radius: 4px;
+  padding: 3px 6px;
+  white-space: nowrap;
 }
 .swarm-status {
   position: fixed;
@@ -273,32 +306,54 @@ textarea:focus-visible {
   will-change: transform;
   transition: opacity 0.25s ease;
 }
-.auto-build {
-  opacity: 0.45;
-  filter: saturate(0.45);
-  outline: 1.5px dashed transparent;
-  outline-offset: 6px;
-  transition: opacity 0.5s ease, outline-color 0.3s ease, filter 0.5s ease;
+.swarm-progress {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: #a1a1aa;
+  background: rgba(7, 7, 9, 0.85);
+  border: 1px solid #27272a;
+  border-radius: 999px;
+  padding: 6px 10px;
+  pointer-events: none;
 }
-.auto-build.assembling {
-  outline-color: #00ff9d;
+.swarm-skip {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: #e4e4e7;
+  background: rgba(7, 7, 9, 0.85);
+  border: 1px solid #3f3f46;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  pointer-events: auto;
 }
-.auto-build.rendering {
-  outline-color: #38bdf8;
+.swarm-skip:hover {
+  border-color: #00ff9d;
+  color: #00ff9d;
 }
-.auto-build.built {
+.swarm-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.swarm-built {
   opacity: 1;
-  filter: none;
-  outline-color: transparent;
+  transition: opacity 0.45s ease;
 }
 @media (max-width: 768px) {
   .swarm-layer {
     display: none;
   }
-  .auto-build {
+  .swarm-hidden {
     opacity: 1;
-    filter: none;
-    outline: none;
+    pointer-events: auto;
   }
 }
 @media (prefers-reduced-motion: reduce) {
