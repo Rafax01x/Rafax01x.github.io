@@ -217,12 +217,14 @@ textarea:focus-visible {
 .project-card .blur-3xl {
   display: none;
 }
-/* Swarm Cursors v4 (engine in components/swarm.ts, targets marked
-   .swarm-target in components/NewSite.tsx): 2 autonomous bots tour
-   the LIVE page — no blank canvas, nothing is hidden. They glide
-   section to section, outline each target with a dashed frame and
-   show a task label. The overlay never intercepts clicks
-   (pointer-events: none); disabled on mobile and for reduced motion. */
+/* Swarm Cursors v4.3 (engine in components/swarm.ts, targets marked
+   .swarm-target in components/NewSite.tsx): 16 UNNAMED small arrows
+   tour the LIVE page — no blank canvas, nothing is hidden, no names
+   or labels anywhere. Two leads glide section to section and outline
+   each target with a dashed frame; 14 followers cluster around the
+   section being built and never sit still. The overlay never
+   intercepts clicks (pointer-events: none); disabled on mobile and
+   for reduced motion. */
 #swarm-overlay {
   position: fixed;
   inset: 0;
@@ -235,54 +237,24 @@ textarea:focus-visible {
   top: 0;
   left: 0;
   will-change: transform;
-  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
-  display: flex;
-  flex-direction: column;
   pointer-events: none;
 }
-.swarm-bot svg {
+.swarm-bot--lead {
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+.swarm-cursor-icon {
+  display: block;
+  will-change: transform;
+}
+.swarm-cursor-icon svg {
+  display: block;
   filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.85));
-}
-.swarm-tag {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 4px;
-  margin-left: 14px;
-  margin-top: -6px;
-  color: #050507;
-  width: fit-content;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
-  letter-spacing: 0.5px;
-}
-.swarm-status {
-  font-family: ui-monospace, monospace;
-  font-size: 9px;
-  color: #e4e4e7;
-  background: rgba(13, 13, 20, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  padding: 1.5px 6px;
-  border-radius: 4px;
-  margin-left: 14px;
-  margin-top: 3px;
-  opacity: 0;
-  backdrop-filter: blur(8px);
-  transition: opacity 0.2s ease;
-  width: fit-content;
-  letter-spacing: 0.3px;
 }
 /* Blueprint pulse on the active target */
 .swarm-building-lead {
   outline: 1.5px dashed #00ff9d !important;
   outline-offset: 6px;
   box-shadow: 0 0 25px rgba(0, 255, 157, 0.18) !important;
-  transition: outline-offset 0.3s ease, box-shadow 0.3s ease;
-}
-.swarm-building-sub {
-  outline: 1.5px dashed #38bdf8 !important;
-  outline-offset: 6px;
-  box-shadow: 0 0 25px rgba(56, 189, 248, 0.18) !important;
   transition: outline-offset 0.3s ease, box-shadow 0.3s ease;
 }
 @media (max-width: 768px) {
