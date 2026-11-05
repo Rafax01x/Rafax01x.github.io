@@ -217,14 +217,14 @@ textarea:focus-visible {
 .project-card .blur-3xl {
   display: none;
 }
-/* Swarm Cursors v4.3 (engine in components/swarm.ts, targets marked
+/* Swarm Cursors v4.6 (engine in components/swarm.ts, targets marked
    .swarm-target in components/NewSite.tsx): 16 UNNAMED small arrows
-   tour the LIVE page — no blank canvas, nothing is hidden, no names
-   or labels anywhere. Two leads glide section to section and outline
-   each target with a dashed frame; 14 followers cluster around the
-   section being built and never sit still. The overlay never
-   intercepts clicks (pointer-events: none); disabled on mobile and
-   for reduced motion. */
+   BUILD the page from a BLANK canvas — the blank layer lives inside
+   the backdrop-blur content wrapper, each section rises + fades in
+   inside a dashed frame as the swarm builds it, and when the build
+   is done the cursors fade out and are removed entirely. No names
+   or labels anywhere. The overlay never intercepts clicks
+   (pointer-events: none); disabled on mobile and for reduced motion. */
 #swarm-overlay {
   position: fixed;
   inset: 0;
@@ -259,20 +259,36 @@ textarea:focus-visible {
   display: block;
   filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.85));
 }
-/* Blueprint pulse on the active target */
+/* Blueprint pulse on the active target — the outline lives on the
+   target itself (transparent by default) so it fades in and out
+   instead of popping. */
+.swarm-target {
+  outline: 1.5px dashed transparent;
+  outline-offset: 12px;
+  transition:
+    outline-color 0.35s ease,
+    outline-offset 0.35s ease,
+    box-shadow 0.35s ease;
+}
 .swarm-building-lead {
-  outline: 1.5px dashed #00ff9d !important;
+  outline-color: #00ff9d !important;
   outline-offset: 6px;
   box-shadow: 0 0 25px rgba(0, 255, 157, 0.18) !important;
-  transition: outline-offset 0.3s ease, box-shadow 0.3s ease;
 }
 .swarm-hidden {
   opacity: 0;
   pointer-events: none;
+  transform: translateY(14px);
 }
 .swarm-built {
   opacity: 1;
-  transition: opacity 0.45s ease;
+  transform: translateY(0);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    outline-color 0.35s ease,
+    outline-offset 0.35s ease,
+    box-shadow 0.35s ease;
 }
 @media (max-width: 768px) {
   #swarm-overlay {

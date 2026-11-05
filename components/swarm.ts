@@ -1,11 +1,13 @@
-// Swarm Cursors v4.5 — 16 UNNAMED cursors that BUILD the website
-// from a BLANK page. After the preloader, the page starts blank
-// (same dark background, nothing visible) and the swarm builds it
-// section by section: the two leads arrive, a dashed outline
-// appears, and the section fades in inside it — then the next.
-// The v4 tour (sequential queue over the 8 .swarm-target sections,
-// SPACEBAR press on the keyboard, smooth-scroll follow, park
-// bottom-right) and the 16-arrow crew from v4.3 are kept:
+// Swarm Cursors v4.6 — 16 UNNAMED cursors that BUILD the website
+// from a BLANK page, SMOOTHLY, and then LEAVE. After the preloader,
+// the page starts blank and the swarm builds it section by section:
+// the two leads arrive, a dashed outline fades in, and the section
+// rises + fades in inside it — then the next. When the build is
+// done, the blank fades, the cursors park for a beat, then fade out
+// and are removed entirely: a finished page has no cursors stuck
+// at the bottom. The v4 tour (sequential queue over the 8
+// .swarm-target sections, SPACEBAR press on the keyboard,
+// smooth-scroll follow) and the 16-arrow crew from v4.3 are kept:
 //
 // - NO names, NO labels anywhere: no "agent:layout", no status pills,
 //   no task tags. The cursors are just small coloured arrows.
@@ -13,8 +15,11 @@
 //   top-left corner of the active section, sub to the top-right —
 //   plus 14 small follower arrows that cluster around whatever
 //   section is being built, drift while they work, and never sit
-//   still. At the end the leads park bottom-right and the followers
-//   keep wandering slowly around them, like the reference finale.
+//   still.
+// - Smoothness: the scroll is given time to settle before the
+//   leads arrive (and they re-measure once, gliding to the corrected
+//   spot instead of jumping); the outline fades in/out instead of
+//   popping; each section rises 14px while fading in over 0.7s.
 //
 // THE STACKING TRAP (v4.4 bug, fixed here): every content section
 // lives inside one wrapper div with `backdrop-blur-xl`, which makes
@@ -154,7 +159,7 @@ export function initSwarm(): SwarmCleanup {
   const overlay = document.createElement("div");
   overlay.id = "swarm-overlay";
   overlay.className = "swarm-layer";
-  overlay.dataset.swarmVersion = "4.5";
+  overlay.dataset.swarmVersion = "4.6";
   overlay.setAttribute("aria-hidden", "true");
 
   const makeBot = (color: string, lead: boolean): Bot => {
@@ -266,6 +271,26 @@ export function initSwarm(): SwarmCleanup {
     unraiseAll();
   };
 
+  // Full teardown: stop the ticker, clear timers, restore the page,
+  // remove both layers. Idempotent — safe to call from the tour-end
+  // path and from the React cleanup.
+  let tornDown = false;
+  const teardown = () => {
+    if (tornDown) return;
+    tornDown = true;
+    cancelled = true;
+    cancelAnimationFrame(rafId);
+    for (const id of timeouts) window.clearTimeout(id);
+    timeouts.clear();
+    for (const remove of listeners) remove();
+    document
+      .querySelectorAll(".swarm-building-lead")
+      .forEach((el) => el.classList.remove("swarm-building-lead"));
+    revealAll();
+    blank.remove();
+    overlay.remove();
+  };
+
   // --- Visitor takes over ----------------------------------------------
   let userHasScrolled = false;
   const onUserGesture = () => {
@@ -361,6 +386,16 @@ export function initSwarm(): SwarmCleanup {
         revealAll();
         blank.remove();
       });
+      // The build is done: let the cursors park for a beat, then
+      // fade them out and remove them entirely — they must not sit
+      // stuck at the bottom of a finished page.
+      later(1400, () => {
+        overlay.style.transition = "opacity .6s ease";
+        overlay.style.opacity = "0";
+      });
+      later(2100, () => {
+        teardown();
+      });
       return;
     }
 
@@ -374,19 +409,30 @@ export function initSwarm(): SwarmCleanup {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
-    later(280, () => {
+    // Let the smooth scroll settle before the leads arrive, so they
+    // do not chase a moving target.
+    later(500, () => {
       if (cancelled) return;
-      const rect = el.getBoundingClientRect();
-      setBot(leads[0], Math.max(16, rect.left + 24), Math.max(20, rect.top + 16));
-      setBot(
-        leads[1],
-        Math.min(window.innerWidth - 40, rect.right - 28),
-        Math.max(20, rect.top + 32),
-      );
+      const placeLeads = () => {
+        const r = el.getBoundingClientRect();
+        setBot(leads[0], Math.max(16, r.left + 24), Math.max(20, r.top + 16));
+        setBot(
+          leads[1],
+          Math.min(window.innerWidth - 40, r.right - 28),
+          Math.max(20, r.top + 32),
+        );
+      };
+      placeLeads();
       el.classList.add("swarm-building-lead");
-      // The section is built now: fade it in inside its frame.
+      // The section is built now: rise + fade in inside its frame.
       el.classList.remove("swarm-hidden");
       el.classList.add("swarm-built");
+      // Re-measure once in case the scroll was still settling — the
+      // leads glide smoothly to the corrected spot instead of
+      // jumping.
+      later(350, () => {
+        if (!cancelled) placeLeads();
+      });
 
       const interactCode = el.dataset.swarmInteract;
       if (interactCode) {
@@ -403,11 +449,11 @@ export function initSwarm(): SwarmCleanup {
         });
       }
 
-      later(700, () => {
+      later(800, () => {
         if (cancelled) return;
         el.classList.remove("swarm-building-lead");
         queueIndex++;
-        later(380, runQueue);
+        later(350, runQueue);
       });
     });
   };
@@ -465,17 +511,5 @@ export function initSwarm(): SwarmCleanup {
 
   void run();
 
-  return () => {
-    if (!cancelled) revealAll();
-    cancelled = true;
-    cancelAnimationFrame(rafId);
-    for (const id of timeouts) window.clearTimeout(id);
-    timeouts.clear();
-    for (const remove of listeners) remove();
-    document
-      .querySelectorAll(".swarm-building-lead")
-      .forEach((el) => el.classList.remove("swarm-building-lead"));
-    blank.remove();
-    overlay.remove();
-  };
+  return teardown;
 }
