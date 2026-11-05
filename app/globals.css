@@ -217,218 +217,81 @@ textarea:focus-visible {
 .project-card .blur-3xl {
   display: none;
 }
-
-/* Swarm Rebuild v3 (original engine in components/swarm.ts, no
-   dependencies): 16 small Figma-style agents rebuild the page from a
-   blank canvas, in parallel waves. The layer never intercepts clicks
-   (pointer-events: none everywhere except the skip button); disabled
-   on mobile and for reduced motion. Hidden/blank state is only added
-   by JS at runtime, so content stays visible if JS fails. */
-.swarm-layer {
+/* Swarm Cursors v4 (engine in components/swarm.ts, targets marked
+   .swarm-target in components/NewSite.tsx): 2 autonomous bots tour
+   the LIVE page — no blank canvas, nothing is hidden. They glide
+   section to section, outline each target with a dashed frame and
+   show a task label. The overlay never intercepts clicks
+   (pointer-events: none); disabled on mobile and for reduced motion. */
+#swarm-overlay {
   position: fixed;
   inset: 0;
-  z-index: 80;
   pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
 }
-.swarm-blank {
+.swarm-bot {
   position: absolute;
-  inset: 0;
-  background: #070709;
-  opacity: 0;
-  pointer-events: none;
-}
-.swarm-mark {
-  position: fixed;
-  left: 50%;
-  top: 38%;
-  transform: translate(-50%, -50%);
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.35em;
-  color: #52525b;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  pointer-events: none;
-}
-.swarm-mark.on {
-  opacity: 1;
-}
-.swarm-cursor {
-  position: fixed;
-  left: 0;
   top: 0;
+  left: 0;
+  will-change: transform;
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
   pointer-events: none;
-  will-change: transform;
 }
-.swarm-cursor-icon {
-  display: block;
-  will-change: transform;
-}
-.swarm-cursor-icon svg {
-  display: block;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+.swarm-bot svg {
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.85));
 }
 .swarm-tag {
-  position: absolute;
-  left: 13px;
-  top: 12px;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 700;
-  line-height: 1;
-  padding: 3px 5px;
-  border-radius: 999px;
-  color: #04120a;
-  white-space: nowrap;
-}
-.swarm-cursor[data-bot="qa"] .swarm-tag {
-  color: #0f172a;
-}
-.swarm-frame {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 0;
-  height: 0;
-  border: 1.5px solid #38bdf8;
-  background: #16161d;
-  opacity: 0;
-  pointer-events: none;
-}
-.swarm-frame-badge {
-  position: absolute;
-  left: 0;
-  top: -24px;
-  font-family: var(--font-mono);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 10px;
   font-weight: 700;
-  line-height: 1;
-  color: #070709;
-  background: #38bdf8;
+  padding: 2px 7px;
   border-radius: 4px;
-  padding: 3px 6px;
-  white-space: nowrap;
+  margin-left: 14px;
+  margin-top: -6px;
+  color: #050507;
+  width: fit-content;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.5px;
 }
-.swarm-handle {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: #fff;
-  border: 1px solid #38bdf8;
-  border-radius: 2px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-}
-.swarm-handle[data-pos="tl"] {
-  left: -5px;
-  top: -5px;
-}
-.swarm-handle[data-pos="tr"] {
-  right: -5px;
-  top: -5px;
-}
-.swarm-handle[data-pos="bl"] {
-  left: -5px;
-  bottom: -5px;
-}
-.swarm-handle[data-pos="br"] {
-  right: -5px;
-  bottom: -5px;
-}
-.swarm-frame--dragging .swarm-handle,
-.swarm-frame--handles .swarm-handle {
-  opacity: 1;
-}
-.swarm-guide {
-  position: fixed;
-  left: 0;
-  width: 100vw;
-  height: 1px;
-  background: #f43f5e;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-.swarm-guide.on {
-  opacity: 1;
-}
-.swarm-caret {
-  display: inline-block;
-  width: 2px;
-  height: 1em;
-  margin-left: 1px;
-  vertical-align: text-bottom;
-  background: #f472b6;
-  animation: swarm-blink 1s steps(1) infinite;
-}
-@keyframes swarm-blink {
-  50% {
-    opacity: 0;
-  }
-}
-.swarm-toolbar {
-  position: fixed;
-  left: 50%;
-  bottom: 16px;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  color: #a1a1aa;
-  background: rgba(7, 7, 9, 0.92);
-  border: 1px solid #27272a;
-  border-radius: 999px;
-  padding: 8px 14px;
-  pointer-events: none;
-  white-space: nowrap;
-}
-.swarm-toolbar-dots span {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 2px;
-}
-.swarm-toolbar-skip {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
+.swarm-status {
+  font-family: ui-monospace, monospace;
+  font-size: 9px;
   color: #e4e4e7;
-  background: transparent;
-  border: 1px solid #3f3f46;
-  border-radius: 999px;
-  padding: 4px 10px;
-  cursor: pointer;
-  pointer-events: auto;
-}
-.swarm-toolbar-skip:hover {
-  border-color: #00ff9d;
-  color: #00ff9d;
-}
-.swarm-hidden {
+  background: rgba(13, 13, 20, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 1.5px 6px;
+  border-radius: 4px;
+  margin-left: 14px;
+  margin-top: 3px;
   opacity: 0;
-  pointer-events: none;
+  backdrop-filter: blur(8px);
+  transition: opacity 0.2s ease;
+  width: fit-content;
+  letter-spacing: 0.3px;
 }
-.swarm-built {
-  opacity: 1;
-  transition: opacity 0.45s ease;
+/* Blueprint pulse on the active target */
+.swarm-building-lead {
+  outline: 1.5px dashed #00ff9d !important;
+  outline-offset: 6px;
+  box-shadow: 0 0 25px rgba(0, 255, 157, 0.18) !important;
+  transition: outline-offset 0.3s ease, box-shadow 0.3s ease;
+}
+.swarm-building-sub {
+  outline: 1.5px dashed #38bdf8 !important;
+  outline-offset: 6px;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.18) !important;
+  transition: outline-offset 0.3s ease, box-shadow 0.3s ease;
 }
 @media (max-width: 768px) {
-  .swarm-layer {
-    display: none;
-  }
-  .swarm-hidden {
-    opacity: 1;
-    pointer-events: auto;
+  #swarm-overlay {
+    display: none !important;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .swarm-layer {
-    display: none;
+  #swarm-overlay {
+    display: none !important;
   }
 }
