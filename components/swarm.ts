@@ -1,6 +1,9 @@
-// Swarm Cursors v4.6 — 16 UNNAMED cursors that BUILD the website
-// from a BLANK page, SMOOTHLY, and then LEAVE. After the preloader,
-// the page starts blank and the swarm builds it section by section:
+// Swarm Cursors v4.7 — 16 UNNAMED cursors that BUILD the website
+// from a BLANK page, SMOOTHLY, and then LEAVE. The page is blank
+// from the very first frame after the preloader: the blank state
+// is prepared at init, while the preloader is still fully opaque
+// on top, so the finished page can never flash through the
+// preloader's fade. Then the swarm builds it section by section:
 // the two leads arrive, a dashed outline fades in, and the section
 // rises + fades in inside it — then the next. When the build is
 // done, the blank fades, the cursors park for a beat, then fade out
@@ -159,7 +162,7 @@ export function initSwarm(): SwarmCleanup {
   const overlay = document.createElement("div");
   overlay.id = "swarm-overlay";
   overlay.className = "swarm-layer";
-  overlay.dataset.swarmVersion = "4.6";
+  overlay.dataset.swarmVersion = "4.7";
   overlay.setAttribute("aria-hidden", "true");
 
   const makeBot = (color: string, lead: boolean): Bot => {
@@ -473,15 +476,8 @@ export function initSwarm(): SwarmCleanup {
   const run = async () => {
     await waitForPreloader();
     if (cancelled) return;
-    // Blank first: hide the targets and cover the page in the same
-    // synchronous block, so no frame of the finished page can flash.
-    // The blank appears instantly (no transition on the way in) and
-    // only fades out at the end of the tour.
-    prepareTargets();
-    blank.style.transition = "none";
-    blank.style.opacity = "1";
-    void blank.offsetWidth;
-    blank.style.transition = "opacity .6s ease";
+    // The page is already blank (prepared at init, under the
+    // preloader) — just start from the top and bring the cursors in.
     window.scrollTo({ top: 0, behavior: "auto" });
     setBot(leads[0], window.innerWidth * 0.3, 90);
     setBot(leads[1], window.innerWidth * 0.7, 90);
@@ -509,7 +505,19 @@ export function initSwarm(): SwarmCleanup {
     later(600, runQueue);
   };
 
-  void run();
+  // Blank from the very first frame: hide the targets and cover the
+  // page NOW, while the preloader is still fully opaque on top — so
+  // the finished page can never flash through the preloader's fade.
+  // The blank appears instantly (no transition on the way in) and
+  // only fades out at the end of the tour. The tour itself still
+  // waits for the preloader (run()).
+  prepareTargets();
+  blank.style.transition = "none";
+  blank.style.opacity = "1";
+  void blank.offsetWidth;
+  blank.style.transition = "opacity .6s ease";
+
+  run().catch(() => teardown());
 
   return teardown;
 }

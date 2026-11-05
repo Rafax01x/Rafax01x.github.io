@@ -234,7 +234,10 @@ textarea:focus-visible {
 }
 .swarm-blank {
   position: absolute;
-  inset: 0;
+  /* -1px + the wrapper's own radius: the blank also covers the
+     wrapper's 1px border, so no frame shows around the blank page. */
+  inset: -1px;
+  border-radius: inherit;
   background: #070709;
   z-index: 9999;
   opacity: 0;
