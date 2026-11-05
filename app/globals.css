@@ -217,3 +217,92 @@ textarea:focus-visible {
 .project-card .blur-3xl {
   display: none;
 }
+
+/* Autonomous swarm cursors (original engine in components/swarm.ts,
+   no dependencies): two Figma-style bots build key sections in sequence.
+   The overlay never intercepts clicks (pointer-events: none everywhere);
+   disabled on mobile and for reduced motion. Blueprint state (.auto-build)
+   is only added by JS at runtime, so content stays visible if JS fails. */
+.swarm-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+}
+.swarm-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+.swarm-cursor svg {
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+.swarm-tag {
+  position: absolute;
+  left: 16px;
+  top: 15px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: #04120a;
+  white-space: nowrap;
+}
+.swarm-cursor[data-bot="ui"] .swarm-tag {
+  color: #04121a;
+}
+.swarm-status {
+  position: fixed;
+  left: 0;
+  top: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: #070709;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 3px 8px;
+  pointer-events: none;
+  will-change: transform;
+  transition: opacity 0.25s ease;
+}
+.auto-build {
+  opacity: 0.45;
+  filter: saturate(0.45);
+  outline: 1.5px dashed transparent;
+  outline-offset: 6px;
+  transition: opacity 0.5s ease, outline-color 0.3s ease, filter 0.5s ease;
+}
+.auto-build.assembling {
+  outline-color: #00ff9d;
+}
+.auto-build.rendering {
+  outline-color: #38bdf8;
+}
+.auto-build.built {
+  opacity: 1;
+  filter: none;
+  outline-color: transparent;
+}
+@media (max-width: 768px) {
+  .swarm-layer {
+    display: none;
+  }
+  .auto-build {
+    opacity: 1;
+    filter: none;
+    outline: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .swarm-layer {
+    display: none;
+  }
+}
