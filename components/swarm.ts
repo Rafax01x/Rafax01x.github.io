@@ -1,4 +1,4 @@
-// Swarm Cursors v4.9 — 16 UNNAMED cursors that BUILD the website
+// Swarm Cursors v4.10 — 16 UNNAMED cursors that BUILD the website
 // from a BLANK page, SMOOTHLY, and then LEAVE. The page is blank
 // from the very first frame after the preloader: the blank state
 // is prepared at init, while the preloader is still fully opaque
@@ -9,14 +9,18 @@
 // target: v4.7 leak), the wrapper's border is removed, and the
 // top bar is hidden too (it lives OUTSIDE the wrapper, so the
 // blank cannot cover it: v4.8 leak). A section is revealed when
-// its first target is built. Then the swarm builds it section by
-// section: the two leads arrive, a dashed outline fades in, and
-// the section rises + fades in inside it — then the next. When
-// the build is done, the blank fades, the cursors park for a beat,
-// then fade out and are removed entirely: a finished page has no
-// cursors stuck at the bottom. The v4 tour (sequential queue over
-// the 8 .swarm-target sections, SPACEBAR press on the keyboard,
-// smooth-scroll follow) and the 16-arrow crew from v4.3 are kept:
+// its first target is built — and every section that fades in is
+// RAISED first, or the fade itself would trap its targets below
+// the blank (v4.9 bug: #projects was never raised, so the Karya
+// Terpilih cards popped in instead of building). Then the swarm
+// builds it section by section: the two leads arrive, a dashed
+// outline fades in, and the section rises + fades in inside it —
+// then the next. When the build is done, the blank fades, the
+// cursors park for a beat, then fade out and are removed entirely:
+// a finished page has no cursors stuck at the bottom. The v4 tour
+// (sequential queue over the 8 .swarm-target sections, SPACEBAR
+// press on the keyboard, smooth-scroll follow) and the 16-arrow
+// crew from v4.3 are kept:
 //
 // - NO names, NO labels anywhere: no "agent:layout", no status pills,
 //   no task tags. The cursors are just small coloured arrows.
@@ -168,7 +172,7 @@ export function initSwarm(): SwarmCleanup {
   const overlay = document.createElement("div");
   overlay.id = "swarm-overlay";
   overlay.className = "swarm-layer";
-  overlay.dataset.swarmVersion = "4.9";
+  overlay.dataset.swarmVersion = "4.10";
   overlay.setAttribute("aria-hidden", "true");
 
   const makeBot = (color: string, lead: boolean): Bot => {
@@ -250,6 +254,14 @@ export function initSwarm(): SwarmCleanup {
   const prepareTargets = () => {
     const hero = document.getElementById("hero");
     if (hero) raise(hero);
+    // #projects too. A section that fades in MUST be raised: while
+    // its opacity is below 1 it is its own stacking context, and
+    // if that context sits below the blank, its targets are trapped
+    // underneath it for the whole fade — the Karya Terpilih cards
+    // popped in instead of building (v4.9 bug). #pillars needs no
+    // separate raise: it is itself a target, so it is raised below.
+    const projects = document.getElementById("projects");
+    if (projects) raise(projects);
     // The nav lives inside the <header>, which is itself a stacking
     // context — raise it too or the nav could never rise above the
     // blank, no matter its own z-index.
