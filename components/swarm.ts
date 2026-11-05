@@ -1,16 +1,21 @@
-// Swarm Cursors v4.7 — 16 UNNAMED cursors that BUILD the website
+// Swarm Cursors v4.8 — 16 UNNAMED cursors that BUILD the website
 // from a BLANK page, SMOOTHLY, and then LEAVE. The page is blank
 // from the very first frame after the preloader: the blank state
 // is prepared at init, while the preloader is still fully opaque
 // on top, so the finished page can never flash through the
-// preloader's fade. Then the swarm builds it section by section:
-// the two leads arrive, a dashed outline fades in, and the section
-// rises + fades in inside it — then the next. When the build is
-// done, the blank fades, the cursors park for a beat, then fade out
-// and are removed entirely: a finished page has no cursors stuck
-// at the bottom. The v4 tour (sequential queue over the 8
-// .swarm-target sections, SPACEBAR press on the keyboard,
-// smooth-scroll follow) and the 16-arrow crew from v4.3 are kept:
+// preloader's fade — and the WHOLE page is blank, because the
+// sections themselves are hidden at prepare (raising a section
+// above the blank exposed all of its children, not just the
+// target: v4.7 leak) and the wrapper's border is hidden too. A
+// section is revealed when its first target is built. Then the
+// swarm builds it section by section: the two leads arrive, a
+// dashed outline fades in, and the section rises + fades in inside
+// it — then the next. When the build is done, the blank fades, the
+// cursors park for a beat, then fade out and are removed entirely:
+// a finished page has no cursors stuck at the bottom. The v4 tour
+// (sequential queue over the 8 .swarm-target sections, SPACEBAR
+// press on the keyboard, smooth-scroll follow) and the 16-arrow
+// crew from v4.3 are kept:
 //
 // - NO names, NO labels anywhere: no "agent:layout", no status pills,
 //   no task tags. The cursors are just small coloured arrows.
@@ -162,7 +167,7 @@ export function initSwarm(): SwarmCleanup {
   const overlay = document.createElement("div");
   overlay.id = "swarm-overlay";
   overlay.className = "swarm-layer";
-  overlay.dataset.swarmVersion = "4.7";
+  overlay.dataset.swarmVersion = "4.8";
   overlay.setAttribute("aria-hidden", "true");
 
   const makeBot = (color: string, lead: boolean): Bot => {
@@ -249,11 +254,21 @@ export function initSwarm(): SwarmCleanup {
     // blank, no matter its own z-index.
     const header = document.querySelector("header");
     if (header) raise(header as HTMLElement);
+    // Hide the wrapper's border while the page is blank, or its
+    // rounded frame would show around the empty canvas.
+    if (wrapper) wrapper.style.borderColor = "transparent";
     document
       .querySelectorAll<HTMLElement>(".swarm-target")
       .forEach((el) => {
         raise(el);
         el.classList.add("swarm-hidden");
+        // Hide the whole section this target lives in too: raising
+        // a section above the blank exposes ALL of its children,
+        // not just the target (v4.7 leak: the hero's top bar, intro
+        // paragraph and buttons showed from the start). The section
+        // is revealed when its first target is built.
+        const section = el.closest("section");
+        if (section) section.classList.add("swarm-section-hidden");
         el.classList.remove("reveal");
         el.querySelectorAll(".reveal").forEach((d) => {
           d.classList.remove("reveal");
@@ -265,12 +280,16 @@ export function initSwarm(): SwarmCleanup {
 
   const revealAll = () => {
     document
-      .querySelectorAll<HTMLElement>(".swarm-target")
+      .querySelectorAll<HTMLElement>(
+        ".swarm-hidden, .swarm-built, .swarm-section-hidden",
+      )
       .forEach((el) => {
         el.classList.remove("swarm-hidden");
         el.classList.remove("swarm-built");
+        el.classList.remove("swarm-section-hidden");
         el.style.opacity = "";
       });
+    if (wrapper) wrapper.style.borderColor = "";
     unraiseAll();
   };
 
@@ -430,6 +449,15 @@ export function initSwarm(): SwarmCleanup {
       // The section is built now: rise + fade in inside its frame.
       el.classList.remove("swarm-hidden");
       el.classList.add("swarm-built");
+      // Reveal the whole section this target lives in (it was hidden
+      // at prepare so its non-target children could not leak). The
+      // section only fades — the rise belongs to the target, so the
+      // two do not stack.
+      const section = el.closest("section");
+      if (section) {
+        section.classList.remove("swarm-section-hidden");
+        section.classList.add("swarm-built");
+      }
       // Re-measure once in case the scroll was still settling — the
       // leads glide smoothly to the corrected spot instead of
       // jumping.

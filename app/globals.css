@@ -234,10 +234,7 @@ textarea:focus-visible {
 }
 .swarm-blank {
   position: absolute;
-  /* -1px + the wrapper's own radius: the blank also covers the
-     wrapper's 1px border, so no frame shows around the blank page. */
-  inset: -1px;
-  border-radius: inherit;
+  inset: 0;
   background: #070709;
   z-index: 9999;
   opacity: 0;
@@ -283,6 +280,12 @@ textarea:focus-visible {
   pointer-events: none;
   transform: translateY(14px);
 }
+/* A whole section hidden at prepare (opacity only, no rise — the
+   rise belongs to the target inside it, so the two do not stack). */
+.swarm-section-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
 .swarm-built {
   opacity: 1;
   transform: translateY(0);
@@ -301,6 +304,10 @@ textarea:focus-visible {
     display: none !important;
   }
   .swarm-hidden {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .swarm-section-hidden {
     opacity: 1;
     pointer-events: auto;
   }
