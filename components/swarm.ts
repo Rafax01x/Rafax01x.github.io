@@ -1,4 +1,4 @@
-// Swarm Cursors v4.11 — 16 UNNAMED cursors that BUILD the website
+// Swarm Cursors v4.12 — 16 UNNAMED cursors that BUILD the website
 // from a BLANK page, SMOOTHLY, and then LEAVE. The page is blank
 // from the very first frame after the preloader: the blank state
 // is prepared at init, while the preloader is still fully opaque
@@ -15,10 +15,11 @@
 // Terpilih cards popped in instead of building). Then the swarm
 // builds it section by section: the two leads arrive, a dashed
 // outline fades in, and the section rises + fades in inside it —
-// then the next. Pace (v4.11, a little faster than v4.10): 400 ms
-// scroll settle + 700 ms build (matches the 0.7 s CSS fade, so it
-// still completes) + 250 ms gap, ~1.35 s per section, ~11 s for
-// the whole tour. When the build is done, the blank fades, the
+// then the next. Pace (v4.12, faster again than v4.11): 300 ms
+// scroll settle + 600 ms build (a touch under the 0.7 s CSS fade —
+// the fade keeps finishing after the leads move on, so it reads as
+// overlapping builds, not a cut) + 150 ms gap, ~1.05 s per section,
+// ~9 s for the whole tour. When the build is done, the blank fades, the
 // cursors park for a beat, then fade out and are removed entirely:
 // a finished page has no cursors stuck at the bottom. The v4 tour
 // (sequential queue over the 8 .swarm-target sections, SPACEBAR
@@ -175,7 +176,7 @@ export function initSwarm(): SwarmCleanup {
   const overlay = document.createElement("div");
   overlay.id = "swarm-overlay";
   overlay.className = "swarm-layer";
-  overlay.dataset.swarmVersion = "4.11";
+  overlay.dataset.swarmVersion = "4.12";
   overlay.setAttribute("aria-hidden", "true");
 
   const makeBot = (color: string, lead: boolean): Bot => {
@@ -459,7 +460,7 @@ export function initSwarm(): SwarmCleanup {
 
     // Let the smooth scroll settle before the leads arrive, so they
     // do not chase a moving target.
-    later(400, () => {
+    later(300, () => {
       if (cancelled) return;
       const placeLeads = () => {
         const r = el.getBoundingClientRect();
@@ -506,11 +507,11 @@ export function initSwarm(): SwarmCleanup {
         });
       }
 
-      later(700, () => {
+      later(600, () => {
         if (cancelled) return;
         el.classList.remove("swarm-building-lead");
         queueIndex++;
-        later(250, runQueue);
+        later(150, runQueue);
       });
     });
   };
